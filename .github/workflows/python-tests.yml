@@ -23,6 +23,7 @@ jobs:
       #     python -m pip install --upgrade pip
       #     pip install -r requirements.txt
 
-      - name: Run main_test.py
+      - name: Run tests
+        if: startsWith(github.event_name, 'push') && startsWith(github.ref, 'refs/heads/feature/')
         run: |
-          python tests/main_test.py
+          python tests/*.py
