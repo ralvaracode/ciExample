@@ -26,9 +26,8 @@ jobs:
       - name: Run tests
         if: startsWith(github.ref_name, 'feature/')
         run: |
-          cd tests
-          python example_feature_test.py
-          python main_test.py
+          python tests/example_feature_test.py
+          python tests/main_test.py
 
       - name: Create PR
         if: ${{ success() }}
