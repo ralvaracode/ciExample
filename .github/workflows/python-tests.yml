@@ -24,25 +24,24 @@ jobs:
       #     pip install -r requirements.txt
 
       - name: Run tests
-        if: startsWith(github.event_name, 'push') && startsWith(github.ref, 'refs/heads/feature/')
+        if: startsWith(github.ref_name, 'feature/')
         run: |
           python tests/*.py
-        if: steps.run.outputs.result == 'success'
-        - name: Create PR
-          uses: actions/github-script@v6
-          env:
-            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-            PR_TITLE: 'Test passed'
-            PR_BODY: 'Test passed'
-          with:
-            github-token: ${{ secrets.GITHUB_TOKEN }}
-            script: |
-              const pr = await github.issues.create({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                title: process.env.PR_TITLE,
-                body: process.env.PR_BODY,
-                head: context.payload.pull_request.head.ref,
-                base: 'test'
-              })
-              core.info(`PR created: ${pr.data.html_url}`)
+
+      - name: Create PR
+        if: ${{ success() }}
+        uses: actions/github-script@v6
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const pr = await github.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: 'Test passed',
+              body: 'Test passed',
+              head: context.ref,
+              base: 'main'
+            })
+            core.info(`PR created: ${pr.data.html_url}`)
