@@ -23,6 +23,50 @@ jobs:
       #     python -m pip install --upgrade pip
       #     pip install -r requirements.txt
 
-      - name: Run main_test.py
+      - name: Run tests
+        if: startsWith(github.ref_name, 'feature/')
         run: |
+          python tests/example_feature_test.py
           python tests/main_test.py
+
+      - name: Verify GitHub Token
+        run: |
+          echo "Checking if ACTION_TOKEN is available..."
+          echo "Token length: ${#ACTION_TOKEN}"
+          echo "Current branch: ${{ github.ref }}"
+          echo "Current branch name: ${{ github.ref_name }}"
+          
+      - name: Create PR
+        if: ${{ success() }}
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ github.ref }}
+          token: ${{ secrets.ACTION_TOKEN }}
+
+      - name: Create PR
+        if: ${{ success() }}
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.ACTION_TOKEN }}
+          script: |
+            console.log('=== Creating Pull Request ===');
+            console.log('Branch:', process.env.BRANCH_NAME);
+            console.log('Repository:', process.env.GITHUB_REPOSITORY);
+            
+            try {
+              const pr = await github.rest.pulls.create({
+                owner: process.env.GITHUB_REPOSITORY.split('/')[0],
+                repo: process.env.GITHUB_REPOSITORY.split('/')[1],
+                title: 'Test passed',
+                body: 'All tests passed successfully',
+                head: process.env.BRANCH_NAME,
+                base: 'main'
+              });
+              console.log(`PR created: ${pr.data.html_url}`);
+            } catch (error) {
+              console.error('Error creating PR:', error);
+              throw error;
+            }
+        env:
+          BRANCH_NAME: ${{ github.ref_name }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
