@@ -31,14 +31,16 @@ jobs:
 
       - name: Create PR
         if: ${{ success() }}
-        uses: peter-evans/create-pull-request@v5
+        uses: actions/github-script@v6
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          branch: feature/example_feature
-          base: main
-          title: 'Test passed'
-          body: 'All tests passed successfully'
-          labels: 'test'
-          commit-message: 'Test passed'
-          committer: GitHub <noreply@github.com>
-          author: GitHub <noreply@github.com>
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const pr = await github.rest.pulls.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: 'Test passed',
+              body: 'All tests passed successfully',
+              head: context.ref,
+              base: 'main'
+            })
+            core.info(`PR created: ${pr.data.html_url}`)
