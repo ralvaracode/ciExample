@@ -32,10 +32,18 @@ jobs:
       - name: Create PR
         if: ${{ success() }}
         uses: actions/github-script@v6
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const pr = await github.rest.pulls.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: 'Test passed',
+              body: 'All tests passed successfully',
+              head: context.ref,
+              base: 'main'
+            })
+            core.info(`PR created: ${pr.data.html_url}`)
           script: |
             const pr = await github.issues.create({
               owner: context.repo.owner,
