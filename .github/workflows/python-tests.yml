@@ -40,17 +40,7 @@ jobs:
               repo: context.repo.repo,
               title: 'Test passed',
               body: 'All tests passed successfully',
-              head: context.ref,
-              base: 'main'
-            })
-            core.info(`PR created: ${pr.data.html_url}`)
-          script: |
-            const pr = await github.issues.create({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              title: 'Test passed',
-              body: 'Test passed',
-              head: context.ref,
+              head: 'feature/example_feature',
               base: 'main'
             })
             core.info(`PR created: ${pr.data.html_url}`)
