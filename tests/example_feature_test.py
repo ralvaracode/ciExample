@@ -10,10 +10,7 @@ def test_example_feature():
     if result.returncode == 0 and result.stdout.strip() == 'Example feature':
         print('Test passed')
     else:
-        print('There was an error')
-        print('returncode:', result.returncode)
-        print('stdout:', result.stdout)
-        print('stderr:', result.stderr)
+        print('Test failed')
 
 if __name__ == '__main__':
     test_example_feature()
