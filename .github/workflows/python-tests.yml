@@ -43,22 +43,27 @@ jobs:
           ref: ${{ github.ref }}
           token: ${{ secrets.ACTION_TOKEN }}
 
-      - name: Create PR using GitHub CLI
+      - name: Create PR
         if: ${{ success() }}
-        env:
-          GH_TOKEN: ${{ secrets.ACTION_TOKEN }}
-        run: |
-          echo "=== Creating Pull Request ==="
-          echo "Branch: ${{ github.ref_name }}"
-          echo "Repository: ${{ github.repository }}"
-          
-          # First check if we have the GitHub CLI installed
-          gh --version
-          
-          # Try to create the PR
-          gh pr create --title "Test passed" --body "All tests passed successfully" --base main --head ${{ github.ref_name }}
-          
-          # If it fails, try with verbose output
-          if [ $? -ne 0 ]; then
-            echo "=== Detailed PR Creation Attempt ==="
-            gh pr create --title "Test passed" --body "All tests passed successfully" --base main --head ${{ github.ref_name }} --verbose
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.ACTION_TOKEN }}
+          script: |
+            console.log('=== Creating Pull Request ===');
+            console.log('Branch:', context.ref_name);
+            console.log('Repository:', context.repo.repo);
+            
+            try {
+              const pr = await github.rest.pulls.create({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                title: 'Test passed',
+                body: 'All tests passed successfully',
+                head: context.ref_name,
+                base: 'main'
+              });
+              console.log(`PR created: ${pr.data.html_url}`);
+            } catch (error) {
+              console.error('Error creating PR:', error);
+              throw error;
+            }
