@@ -50,16 +50,16 @@ jobs:
           github-token: ${{ secrets.ACTION_TOKEN }}
           script: |
             console.log('=== Creating Pull Request ===');
-            console.log('Branch:', context.ref_name);
-            console.log('Repository:', context.repo.repo);
+            console.log('Branch:', process.env.BRANCH_NAME);
+            console.log('Repository:', process.env.GITHUB_REPOSITORY);
             
             try {
               const pr = await github.rest.pulls.create({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
+                owner: process.env.GITHUB_REPOSITORY.split('/')[0],
+                repo: process.env.GITHUB_REPOSITORY.split('/')[1],
                 title: 'Test passed',
                 body: 'All tests passed successfully',
-                head: context.ref_name,
+                head: process.env.BRANCH_NAME,
                 base: 'main'
               });
               console.log(`PR created: ${pr.data.html_url}`);
@@ -67,3 +67,6 @@ jobs:
               console.error('Error creating PR:', error);
               throw error;
             }
+        env:
+          BRANCH_NAME: ${{ github.ref_name }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
