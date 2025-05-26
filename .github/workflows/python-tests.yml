@@ -29,14 +29,34 @@ jobs:
           python tests/example_feature_test.py
           python tests/main_test.py
 
+      - name: Verify GitHub Token
+        run: |
+          echo "Checking if ACTION_TOKEN is available..."
+          echo "Token length: ${#ACTION_TOKEN}"
+          echo "Current branch: ${{ github.ref }}"
+          echo "Current branch name: ${{ github.ref_name }}"
+          
       - name: Create PR
         if: ${{ success() }}
         uses: actions/checkout@v3
         with:
           ref: ${{ github.ref }}
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.ACTION_TOKEN }}
 
       - name: Create PR using GitHub CLI
         if: ${{ success() }}
         run: |
+          echo "=== Creating Pull Request ==="
+          echo "Branch: ${{ github.ref_name }}"
+          echo "Repository: ${{ github.repository }}"
+          
+          # First check if we have the GitHub CLI installed
+          gh --version
+          
+          # Try to create the PR
           gh pr create --title "Test passed" --body "All tests passed successfully" --base main --head ${{ github.ref_name }}
+          
+          # If it fails, try with verbose output
+          if [ $? -ne 0 ]; then
+            echo "=== Detailed PR Creation Attempt ==="
+            gh pr create --title "Test passed" --body "All tests passed successfully" --base main --head ${{ github.ref_name }} --verbose
